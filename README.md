@@ -21,7 +21,7 @@ The system is designed to:
 ## Application Interface
 
 <p align="center">
-<img src="https://github.com/Dhruvi0311/Churnova-Customer-Churn-Prediction/blob/main/Images/dashboard.png" width="850">
+<img src="https://raw.githubusercontent.com/Dhruvi0311/Churnova-Customer-Churn-Prediction/main/Images/dashboard.png" width="850">
 </p>
 
 ---
@@ -171,6 +171,8 @@ Based on model outputs and analysis:
 ├── Procfile                            : procfile for app deployment
 ├── LICENSE.md                          : MIT License
 └── README.md                           : Report
+```
+
 
 ## Installation and Execution
 
