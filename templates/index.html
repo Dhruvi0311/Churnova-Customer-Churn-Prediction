@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Churnova — Churn Prediction</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      background: #0f1117;
+      color: #c9d1d9;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    a { color: #58a6ff; }
+
+    /* Layout */
+    .wrap { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+
+    /* Header */
+    .site-header {
+      border-bottom: 1px solid #21262d;
+      padding: 14px 0;
+      margin-bottom: 32px;
+    }
+    .site-header .logo {
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 500;
+      font-size: 15px;
+      color: #e6edf3;
+      letter-spacing: 0.02em;
+    }
+    .site-header .logo span { color: #3fb950; }
+    .site-header .subtitle {
+      font-size: 12px;
+      color: #6e7681;
+      margin-top: 1px;
+    }
+
+    /* Section heading */
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #6e7681;
+      margin-bottom: 12px;
+    }
+
+    /* Card */
+    .card {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 6px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+
+    /* Checkbox rows */
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 6px 12px;
+    }
+    .cb-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 0;
+      cursor: pointer;
+      user-select: none;
+    }
+    .cb-item input[type="checkbox"] {
+      width: 14px; height: 14px;
+      accent-color: #3fb950;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .cb-item span {
+      font-size: 13px;
+      color: #8b949e;
+    }
+    .cb-item:has(input:checked) span { color: #c9d1d9; }
+
+    /* Divider */
+    .divider {
+      border: none;
+      border-top: 1px solid #21262d;
+      margin: 20px 0;
+    }
+
+    /* Form fields */
+    .field-row {
+      display: grid;
+      gap: 16px;
+    }
+    .field-row.cols-2 { grid-template-columns: 1fr 1fr; }
+    .field-row.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+    @media (max-width: 640px) {
+      .field-row.cols-2,
+      .field-row.cols-4 { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 400px) {
+      .field-row.cols-2,
+      .field-row.cols-4 { grid-template-columns: 1fr; }
+    }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      color: #6e7681;
+      margin-bottom: 5px;
+    }
+
+    select, input[type="number"] {
+      width: 100%;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #c9d1d9;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 13px;
+      padding: 7px 10px;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      transition: border-color 0.15s;
+    }
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236e7681' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+    select:focus, input[type="number"]:focus { border-color: #388bfd; }
+    input[type="number"]::placeholder { color: #484f58; }
+
+    /* Button */
+    .btn-run {
+      background: #238636;
+      color: #fff;
+      border: 1px solid #2ea043;
+      border-radius: 6px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 20px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-run:hover { background: #2ea043; }
+
+    /* Result stats */
+    .stat-block {
+      padding: 16px 20px;
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 6px;
+    }
+    .stat-block .label {
+      font-size: 11px;
+      color: #6e7681;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+    .stat-block .value {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 28px;
+      font-weight: 500;
+      line-height: 1;
+    }
+    .stat-block .note {
+      font-size: 12px;
+      color: #6e7681;
+      margin-top: 6px;
+    }
+    .color-green { color: #3fb950; }
+    .color-yellow { color: #d29922; }
+    .color-red { color: #f85149; }
+
+    /* Conclusion */
+    .conclusion {
+      border-left: 2px solid #3fb950;
+      padding: 10px 16px;
+      background: #0d1117;
+      border-radius: 0 6px 6px 0;
+      font-size: 13px;
+      color: #8b949e;
+      line-height: 1.7;
+    }
+
+    /* Charts */
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 600px) { .chart-grid { grid-template-columns: 1fr; } }
+
+    .chart-item p {
+      font-size: 11px;
+      color: #6e7681;
+      margin-bottom: 6px;
+    }
+    .chart-item img {
+      width: 100%;
+      border-radius: 4px;
+      border: 1px solid #21262d;
+      display: block;
+    }
+
+    /* Footer */
+    .site-footer {
+      border-top: 1px solid #21262d;
+      padding: 16px 0;
+      margin-top: 48px;
+      font-size: 12px;
+      color: #484f58;
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- Header -->
+  <header class="site-header">
+    <div style="display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+      <div>
+        <div class="logo">churn<span>nova</span></div>
+        <div class="subtitle">Customer churn prediction &amp; lifetime value · ML project</div>
+      </div>
+      <div style="font-size:11px; color:#484f58;">Dhruvi · Sneha · Ramansh · Piyush</div>
+    </div>
+  </header>
+
+  <!-- Form -->
+  <form action="{{ url_for('predict') }}" method="post">
+
+    <!-- Customer profile -->
+    <div class="card">
+      <div class="section-title">Customer profile</div>
+
+      <div class="field-row cols-4" style="margin-bottom: 20px;">
+        <div class="field">
+          <label>Gender</label>
+          <select name="gender" id="gender">
+            <option value="0">Male</option>
+            <option value="1">Female</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Internet service</label>
+          <select name="InternetService" id="InternetService">
+            <option value="0">No internet</option>
+            <option value="1">DSL</option>
+            <option value="2">Fiber optic</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Contract type</label>
+          <select name="Contract" id="Contract">
+            <option value="0">Month-to-month</option>
+            <option value="1">One year</option>
+            <option value="2">Two year</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Payment method</label>
+          <select name="PaymentMethod" id="PaymentMethod">
+            <option value="0">Bank transfer (auto)</option>
+            <option value="1">Credit card (auto)</option>
+            <option value="2">Electronic check</option>
+            <option value="3">Mailed check</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-row cols-2">
+        <div class="field">
+          <label>Monthly charges (USD)</label>
+          <input type="number" min="0" name="MonthlyCharges" placeholder="e.g. 65" required />
+        </div>
+        <div class="field">
+          <label>Tenure (months)</label>
+          <input type="number" min="0" name="Tenure" placeholder="e.g. 24" required />
+        </div>
+      </div>
+    </div>
+
+    <!-- Services -->
+    <div class="card">
+      <div class="section-title">Services &amp; add-ons</div>
+      <div class="checkbox-grid">
+        <label class="cb-item"><input type="checkbox" name="SeniorCitizen" value="1"><span>Senior citizen</span></label>
+        <label class="cb-item"><input type="checkbox" name="Partner" value="1"><span>Has partner</span></label>
+        <label class="cb-item"><input type="checkbox" name="Dependents" value="1"><span>Has dependents</span></label>
+        <label class="cb-item"><input type="checkbox" name="PaperlessBilling" value="1"><span>Paperless billing</span></label>
+        <label class="cb-item"><input type="checkbox" name="PhoneService" value="1"><span>Phone service</span></label>
+        <label class="cb-item"><input type="checkbox" name="MultipleLines" value="1"><span>Multiple lines</span></label>
+        <label class="cb-item"><input type="checkbox" name="OnlineSecurity" value="1"><span>Online security</span></label>
+        <label class="cb-item"><input type="checkbox" name="OnlineBackup" value="1"><span>Online backup</span></label>
+        <label class="cb-item"><input type="checkbox" name="DeviceProtection" value="1"><span>Device protection</span></label>
+        <label class="cb-item"><input type="checkbox" name="TechSupport" value="1"><span>Tech support</span></label>
+        <label class="cb-item"><input type="checkbox" name="StreamingTV" value="1"><span>Streaming TV</span></label>
+        <label class="cb-item"><input type="checkbox" name="StreamingMovies" value="1"><span>Streaming movies</span></label>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 32px;">
+      <button type="submit" class="btn-run">Run prediction</button>
+    </div>
+
+  </form>
+
+  <!-- Results -->
+  {% if prediction_text %}
+  <div>
+    <div class="section-title" style="margin-bottom: 16px;">Results</div>
+
+    <!-- Stat row -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+
+      <div class="stat-block">
+        <div class="label">Churn probability</div>
+        <div class="value {% if churn_prob is defined %}{% if churn_prob|float > 0.65 %}color-red{% elif churn_prob|float > 0.35 %}color-yellow{% else %}color-green{% endif %}{% else %}color-green{% endif %}">
+          {% if churn_prob is defined %}{{ (churn_prob|float * 100)|round(1) }}%{% else %}—{% endif %}
+        </div>
+        <div class="note">
+          {% if churn_prob is defined %}
+            {% if churn_prob|float > 0.65 %}High risk of leaving{% elif churn_prob|float > 0.35 %}Moderate risk{% else %}Likely to stay{% endif %}
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="stat-block">
+        <div class="label">Lifetime value (est.)</div>
+        <div class="value color-green">{% if clv is defined %}${{ clv | int }}{% else %}—{% endif %}</div>
+        <div class="note">Based on projected tenure</div>
+      </div>
+
+      <div class="stat-block" style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div class="label">Raw output</div>
+        <div style="font-size: 13px; color: #8b949e; line-height: 1.6; margin-top: 4px;">{{ prediction_text }}</div>
+      </div>
+
+    </div>
+
+    <!-- Recommendation -->
+    {% if conclusion %}
+    <div style="margin-bottom: 16px;">
+      <div class="section-title">Recommendation</div>
+      <div class="conclusion">{{ conclusion }}</div>
+    </div>
+    {% endif %}
+
+   <!-- Charts -->
+  <div class="section-title">Model outputs</div>
+
+  <div class="chart-grid">
+
+  {% if url_1 %}
+  <div class="chart-item">
+    <p>Churn Gauge</p>
+    <img src="data:image/png;base64,{{ url_1 }}" />
+  </div>
+  {% endif %}
+
+  {% if url_2 %}
+  <div class="chart-item">
+    <p>Feature Importance</p>
+    <img src="data:image/png;base64,{{ url_2 }}" />
+  </div>
+  {% endif %}
+
+  {% if url_3 %}
+  <div class="chart-item">
+    <p>Customer Contribution</p>
+    <img src="data:image/png;base64,{{ url_3 }}" />
+  </div>
+  {% endif %}
+
+</div>
+
+<div class="chart-grid">
+
+  {% if url_4 %}
+  <div class="chart-item">
+    <p>Churn Probability</p>
+    <img src="data:image/png;base64,{{ url_4 }}" />
+  </div>
+  {% endif %}
+
+  {% if url_5 %}
+  <div class="chart-item">
+    <p>Value vs Risk</p>
+    <img src="data:image/png;base64,{{ url_5 }}" />
+  </div>
+  {% endif %}
+
+  </div>
+  {% endif %}
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    churnova &nbsp;·&nbsp; Customer Churn Predicition App &nbsp;·&nbsp; 2025
+  </footer>
+
+</div>
+</body>
+</html>
